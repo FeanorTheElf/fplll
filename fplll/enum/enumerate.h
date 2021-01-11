@@ -100,10 +100,18 @@ public:
         enumext.reset(new ExternalEnumeration<ZT, FT>(_gso, _evaluator));
       if (enumext->enumerate(first, last, fmaxdist, fmaxdistexpo, pruning, dual))
       {
+
+        auto end = std::chrono::steady_clock::now();
+        unsigned long long time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+        std::cout << "Enumeration done, dim: " << (last - first) << ", time: " << time_ms << " ms, nodes: " << get_nodes() << std::endl;
+        
         _nodes = enumext->get_nodes_array();
         return;
       }
     }
+
+    begin = std::chrono::steady_clock::now();
+
     // if external enumerator is not available, not possible or when it fails then fall through to
     // fplll enumeration
     if (enumdyn.get() == nullptr)
