@@ -25,6 +25,7 @@
 #include <fplll/enum/evaluator.h>
 #include <fplll/gso_interface.h>
 #include <memory>
+#include <chrono>
 
 FPLLL_BEGIN_NAMESPACE
 
