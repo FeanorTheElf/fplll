@@ -118,7 +118,7 @@ public:
   {
     if (level == -1)
     {
-      return std::accumulate(_nodes.begin(), _nodes.end(), 0);
+      return std::accumulate(_nodes.begin(), _nodes.end(), 0LL);
     }
     return _nodes[level];
   }

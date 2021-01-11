@@ -49,7 +49,7 @@ public:
   {
     if (level == -1)
     {
-      return std::accumulate(nodes.cbegin(), nodes.cend(), 0);
+      return std::accumulate(nodes.cbegin(), nodes.cend(), 0LL);
     }
     return nodes[level];
   }
@@ -90,6 +90,8 @@ public:
                  const vector<enumf> &pruning = vector<enumf>(), bool dual = false,
                  bool subtree_reset = false)
   {
+    auto begin = std::chrono::steady_clock::now();
+
     // check for external enumerator and use that
     if (get_external_enumerator() != nullptr && subtree.empty() && target_coord.empty())
     {
@@ -108,12 +110,16 @@ public:
     enumdyn->enumerate(first, last, fmaxdist, fmaxdistexpo, target_coord, subtree, pruning, dual,
                        subtree_reset);
     _nodes = enumdyn->get_nodes_array();
+
+    auto end = std::chrono::steady_clock::now();
+    unsigned long long time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+    std::cout << "Enumeration done, dim: " << (last - first) << ", time: " << time_ms << " ms, nodes: " << get_nodes() << std::endl;
   }
 
   inline uint64_t get_nodes(const int level = -1) const
   {
     if (level == -1)
-      return std::accumulate(_nodes.begin(), _nodes.end(), 0);
+      return std::accumulate(_nodes.begin(), _nodes.end(), 0LL);
     return _nodes[level];
   }
 
