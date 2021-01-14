@@ -104,7 +104,7 @@ public:
         auto end = std::chrono::steady_clock::now();
         unsigned long long time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
         std::cout << "Enumeration done, dim: " << (last - first) << ", time: " << time_ms << " ms, nodes: " << get_nodes() << std::endl;
-        
+
         _nodes = enumext->get_nodes_array();
         return;
       }
@@ -122,7 +122,7 @@ public:
 
     auto end = std::chrono::steady_clock::now();
     unsigned long long time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
-    std::cout << "Enumeration done, dim: " << (last - first) << ", time: " << time_ms << " ms, nodes: " << get_nodes() << std::endl;
+    std::cout << "Enumeration done using fallback, dim: " << (last - first) << ", time: " << time_ms << " ms, nodes: " << get_nodes() << std::endl;
   }
 
   inline uint64_t get_nodes(const int level = -1) const

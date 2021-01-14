@@ -771,6 +771,7 @@ void read_options(int argc, char **argv, Options &o)
 
 int main(int argc, char **argv)
 {
+  set_threads();
   int result;
   Options o;
   read_options(argc, argv, o);
