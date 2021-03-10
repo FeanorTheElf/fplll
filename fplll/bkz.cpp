@@ -127,7 +127,6 @@ void log_projected_shortest_vector_len_and_hermite_quotient(
 
   std::cout << "lambda_1 (projected lattice): " << ::sqrt(shortest_vector_len_sq) << std::endl;
   std::cout << "hermite quotient: " << hermite_quotient << std::endl;
-  std::cout << "hermite quotient bound: " << pow(4./3., (d - 1) / 2.) << std::endl;
 }
 
 template<class ZT, class FT> 
