@@ -145,7 +145,7 @@ void log_lifted_shortest_vector_len(
     for (int j = max(i, from); j < to; ++j) {
       double coeff;
       if (i < j)  {
-        coeff = lattice_gso.get_mu(tmp, i, j).get_d();
+        coeff = lattice_gso.get_mu(tmp, j, i).get_d();
       } else {
         coeff = 1;
       }
@@ -155,7 +155,6 @@ void log_lifted_shortest_vector_len(
   }
   std::cout << "lifted shortest vector len: " << ::sqrt(lifted_len_sq) << std::endl;
 }
-
 
 template<class ZT, class FT> 
 void log_lattice_stats(
@@ -170,7 +169,7 @@ void log_lattice_stats(
 
   std::cout << "dimension: " << (to - from) << std::endl;
   log_projected_lattice_gram_schmidt_and_volume(lattice_gso, from, to);
-  log_projected_lattice(lattice_gso, from, to);
+  //log_projected_lattice(lattice_gso, from, to);
 
   if (evaluator.begin() == evaluator.end()) {
     std::cout << "Enumeration did not find a short vector!" << std::endl;
@@ -772,6 +771,13 @@ template <class ZT, class FT> bool BKZReduction<ZT, FT>::bkz()
       {
         clean = tour(i, kappa_max, param, 0, num_rows);
       }
+
+      std::cout << std::endl;
+      std::cout << "bkz tour finished (" << i << ")" << std::endl;
+      std::cout << "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾" << std::endl;
+      log_projected_lattice_gram_schmidt_and_volume(
+        m, 0, num_rows
+      );
     }
     catch (RedStatus &e)
     {
