@@ -23,8 +23,166 @@
 #include "util.h"
 #include "wrapper.h"
 #include <iomanip>
+#include <cmath>
 
 FPLLL_BEGIN_NAMESPACE
+
+template<class ZT, class FT> 
+void log_projected_lattice(
+  fplll::MatGSOInterface<ZT, FT>& lattice_gso, 
+  int from, 
+  int to
+) {
+  FT tmp;
+
+  std::cout << "lattice: spanned by {" << std::endl;
+  for (int i = from; i < to; ++i) {
+    std::cout << "    [";
+    for (int j = from; j < to; ++j) {
+      if (j <= i) {
+        double coeff;
+        if (j < i) {
+          coeff = lattice_gso.get_mu(tmp, i, j).get_d();
+        } else {
+          coeff = 1;
+        }
+        double gram_len = ::sqrt(lattice_gso.get_r(tmp, j, j).get_d());
+        std::cout << (coeff * gram_len) << ", ";
+      } else {
+        std::cout << "0., ";
+      }
+    }
+    std::cout << "]," << std::endl;
+  }
+  std::cout << "}" << std::endl;
+}
+
+template<class ZT, class FT> 
+void log_projected_lattice_gram_schmidt_and_volume(
+  fplll::MatGSOInterface<ZT, FT>& lattice_gso, 
+  int from, 
+  int to
+) {
+  double volume = 1.;
+  FT tmp;
+
+  std::cout << "gram-schmidt lengths: [";
+  for (int i = from; i < to; ++i) {
+    double gram_len = ::sqrt(lattice_gso.get_r(tmp, i, i).get_d());
+    std::cout << gram_len << ", ";
+    volume *= gram_len;
+  }
+  std::cout << "]" << std::endl;
+
+  std::cout << "volume: " << volume << std::endl;
+}
+
+template<class ZT, class FT> 
+void log_shortest_vector_coeffs(
+  fplll::MatGSOInterface<ZT, FT>& lattice_gso, 
+  int from, 
+  int to,
+  const std::vector<FT>& shortest_vector
+) {
+  std::cout << "shortest vector coefficients: [";
+  for (auto x : shortest_vector) {
+    std::cout << x << ", ";
+  }
+  std::cout << "]" << std::endl;
+}
+
+template<class ZT, class FT> 
+void log_projected_shortest_vector_len_and_hermite_quotient(
+  fplll::MatGSOInterface<ZT, FT>& lattice_gso, 
+  int from, 
+  int to,
+  const std::vector<FT>& shortest_vector
+) {
+  FT tmp;
+  double shortest_vector_len_sq = 0.;
+
+  for (int i = from; i < to; ++i) {
+    double coord = 0.;
+    for (int j = i; j < to; ++j) {
+      double coeff;
+      if (i < j) {
+        coeff = lattice_gso.get_mu(tmp, j, i).get_d();
+      } else {
+        coeff = 1;
+      }
+      coord += shortest_vector[j - from].get_d() * coeff;
+    }
+    shortest_vector_len_sq += coord * coord * lattice_gso.get_r(tmp, i, i).get_d();
+  }
+  
+  double volume = 1.;
+
+  for (int i = from; i < to; ++i) {
+    double gram_len = ::sqrt(lattice_gso.get_r(tmp, i, i).get_d());
+    volume *= gram_len;
+  }
+
+  double d = to - from;
+  double hermite_quotient = shortest_vector_len_sq / pow(volume, 2. / d);
+
+  std::cout << "lambda_1 (projected lattice): " << ::sqrt(shortest_vector_len_sq) << std::endl;
+  std::cout << "hermite quotient: " << hermite_quotient << std::endl;
+  std::cout << "hermite quotient bound: " << pow(4./3., (d - 1) / 2.) << std::endl;
+}
+
+template<class ZT, class FT> 
+void log_lifted_shortest_vector_len(
+  fplll::MatGSOInterface<ZT, FT>& lattice_gso, 
+  int from, 
+  int to,
+  const std::vector<FT>& shortest_vector
+) {
+  FT tmp;
+  double lifted_len_sq = 0.;
+
+  for (int i = 0; i < to; ++i) {
+    double coord = 0.;
+    for (int j = max(i, from); j < to; ++j) {
+      double coeff;
+      if (i < j)  {
+        coeff = lattice_gso.get_mu(tmp, i, j).get_d();
+      } else {
+        coeff = 1;
+      }
+      coord += shortest_vector[j - from].get_d() * coeff;
+    }
+    lifted_len_sq += coord * coord * lattice_gso.get_r(tmp, i, i).get_d();
+  }
+  std::cout << "lifted shortest vector len: " << ::sqrt(lifted_len_sq) << std::endl;
+}
+
+
+template<class ZT, class FT> 
+void log_lattice_stats(
+  fplll::MatGSOInterface<ZT, FT>& lattice_gso, 
+  int from, 
+  int to,
+  fplll::FastEvaluator<FT>& evaluator
+) {
+  std::cout << std::endl;
+  std::cout << "svp-reduce block from " << from << " to " << to << std::endl;
+  std::cout << "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾" << std::endl;
+
+  std::cout << "dimension: " << (to - from) << std::endl;
+  log_projected_lattice_gram_schmidt_and_volume(lattice_gso, from, to);
+  log_projected_lattice(lattice_gso, from, to);
+
+  if (evaluator.begin() == evaluator.end()) {
+    std::cout << "Enumeration did not find a short vector!" << std::endl;
+    return;
+  }
+
+  const std::vector<FT>& shortest_vector = evaluator.begin()->second;
+
+  log_shortest_vector_coeffs(lattice_gso, from, to, shortest_vector);
+  log_projected_shortest_vector_len_and_hermite_quotient(lattice_gso, from, to, shortest_vector);
+  log_lifted_shortest_vector_len(lattice_gso, from, to, shortest_vector);
+}
 
 template <class ZT, class FT>
 BKZReduction<ZT, FT>::BKZReduction(MatGSOInterface<ZT, FT> &m, LLLReduction<ZT, FT> &lll_obj,
@@ -330,6 +488,10 @@ bool BKZReduction<ZT, FT>::svp_reduction(int kappa, int block_size, const BKZPar
     enum_obj.enumerate(kappa, kappa + block_size, max_dist, max_dist_expo, vector<FT>(),
                        vector<enumxt>(), pruning.coefficients, dual);
     nodes += enum_obj.get_nodes();
+
+    log_lattice_stats(
+      m, kappa, kappa + block_size, evaluator
+    );
 
     if (!evaluator.empty())
     {
