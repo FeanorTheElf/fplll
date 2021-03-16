@@ -58,6 +58,35 @@ void log_projected_lattice(
 }
 
 template<class ZT, class FT> 
+void log_projected_lattice_mu(
+  fplll::MatGSOInterface<ZT, FT>& lattice_gso, 
+  int from, 
+  int to
+) {
+  FT tmp;
+
+  std::cout << "lattice mu: [" << std::endl;
+  for (int i = from; i < to; ++i) {
+    std::cout << "    [";
+    for (int j = from; j < to; ++j) {
+      if (j <= i) {
+        double coeff;
+        if (j < i) {
+          coeff = lattice_gso.get_mu(tmp, i, j).get_d();
+        } else {
+          coeff = 1;
+        }
+        std::cout << coeff << ", ";
+      } else {
+        std::cout << "0., ";
+      }
+    }
+    std::cout << "]," << std::endl;
+  }
+  std::cout << "]" << std::endl;
+}
+
+template<class ZT, class FT> 
 void log_projected_lattice_gram_schmidt_and_volume(
   fplll::MatGSOInterface<ZT, FT>& lattice_gso, 
   int from, 
@@ -168,7 +197,7 @@ void log_lattice_stats(
 
   std::cout << "dimension: " << (to - from) << std::endl;
   log_projected_lattice_gram_schmidt_and_volume(lattice_gso, from, to);
-  //log_projected_lattice(lattice_gso, from, to);
+  log_projected_lattice_mu(lattice_gso, from, to);
 
   if (evaluator.begin() == evaluator.end()) {
     std::cout << "Enumeration did not find a short vector!" << std::endl;
